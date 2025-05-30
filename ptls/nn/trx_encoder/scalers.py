@@ -12,7 +12,7 @@ class IdentityScaler(BaseEncoder):
     def output_size(self):
         return 1
 
-class SigmoidScaler(IdentityScaler, torch.nn.Sigmoid):
+class SigmoidScaler(torch.nn.Sigmoid, IdentityScaler):
     pass
 
 
