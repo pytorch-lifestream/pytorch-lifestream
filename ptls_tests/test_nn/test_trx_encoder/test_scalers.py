@@ -2,12 +2,16 @@ import torch
 
 from ptls.data_load.padded_batch import PaddedBatch
 from ptls.nn.trx_encoder import TrxEncoder
-from ptls.nn.trx_encoder.encoders import BaseEncoder
-
 from ptls.nn.trx_encoder.scalers import (
-    Periodic, PeriodicMLP, PLE, PLE_MLP,
-    IdentityScaler, SigmoidScaler, LogScaler, YearScaler,
-    NumToVector, LogNumToVector, PoissonScaler, ExpScaler
+    PLE,
+    PLE_MLP,
+    ExpScaler,
+    LogNumToVector,
+    NumToVector,
+    Periodic,
+    PeriodicMLP,
+    PoissonScaler,
+    Time2VecMult,
 )
 
 
@@ -285,3 +289,19 @@ def test_exp_scaler():
     assert z.payload.shape == (B, T, 1)
     assert trx_encoder.output_size == 1
     assert torch.all(z.payload > 0)
+
+
+def test_time2vec_mult():
+    B, T = 5, 20
+    embeddings_size = 16
+    scaler = Time2VecMult(embeddings_size=embeddings_size)
+    trx_encoder = TrxEncoder(numeric_values={'timestamp': scaler})
+    x = PaddedBatch(
+        payload={
+            'timestamp': torch.randint(1577836800, 1767225599, (B, T)),
+        },
+        length=torch.randint(10, 20, (B,))
+    )
+    z = trx_encoder(x)
+    assert z.payload.shape == (B, T, embeddings_size)
+    assert trx_encoder.output_size == embeddings_size

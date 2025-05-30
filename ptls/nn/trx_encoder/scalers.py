@@ -184,6 +184,79 @@ class PLE_MLP(IdentityScaler):
         return self.mlp_output_size
 
 
+class Time2VecMult(IdentityScaler):
+    """
+    Multidimensional time encoding.
+    Proposed in paper "Incorporating Time in Sequential Recommendation Models" as "Projection-based approach".
+    Input tensor must contain Unix timestamps in seconds.
+    Timestamps are converted into numerical features and encoded using a linear layer and a cosine function.
+    """
+
+    def __init__(self, embeddings_size: int) -> None:
+        """
+        Class initialization.
+
+        Args:
+            embeddings_size (int): Desired size of time embeddings.
+        """
+
+        super().__init__()
+
+        self.embeddings_size = embeddings_size
+
+        self.fc = nn.Linear(4, self.embeddings_size)
+
+    def forward(self, timestamps: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass.
+
+        Args:
+            timestamps (torch.Tensor): Tensor containing Unix timestamps in seconds.
+
+        Returns:
+            torch.Tensor: Tensor with resulting time embeddings.
+        """
+
+        # Calculating the numbers of hours and days passed since 01-01-1970
+        total_hours = timestamps.float() / 3600.0
+        total_days = total_hours / 24.0
+
+        # 1. Normalized hour of the day [0, 1]
+        hour_of_day = torch.fmod(total_hours, 24.0) / 23.0
+
+        # 2. Normalized day of the week [0, 1] (0 - Mon, 1 - Sun)
+        day_of_week = torch.fmod((total_days.long() + 3), 7).float() / 6.0
+
+        # 3. Normalized week of the month [0, 1]
+        # (approximation)
+        day_of_month_approx = torch.fmod(total_days, 30.44)
+        week_of_month = (day_of_month_approx / 7.0).clamp(0.0, 4.0) / 4.0
+
+        # 4. Normalized month of the year [0, 1] (0 - Jan, 1 - Dec)
+        # (approximation)
+        month_of_year = torch.fmod(total_days / 30.44, 12.0) / 11.0
+
+        # Staking 4 tensors with timestamp features into one
+        timestamp_features = torch.stack([
+            hour_of_day,
+            day_of_week,
+            week_of_month,
+            month_of_year
+        ], dim=-1)
+
+        # Applying a linear layer and a cosine function
+        return torch.cos(self.fc(timestamp_features))
+
+    @property
+    def output_size(self) -> int:
+        """
+        Returns:
+            int: The last dimension of the output tensor.
+        """
+
+        return self.embeddings_size
+
+
 def scaler_by_name(name):
     scaler = {
         'identity': IdentityScaler,
