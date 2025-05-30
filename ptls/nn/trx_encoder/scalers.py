@@ -12,8 +12,14 @@ class IdentityScaler(BaseEncoder):
     def output_size(self):
         return 1
 
-class SigmoidScaler(torch.nn.Sigmoid, IdentityScaler):
-    pass
+class SigmoidScaler(IdentityScaler):
+    def __init__(self, col_name: str = None):
+        super().__init__(col_name)
+        self.sigmoid = torch.nn.Sigmoid()
+
+    def forward(self, x):
+        x = super().forward(x)
+        return self.sigmoid(x)
 
 
 class LogScaler(IdentityScaler):
@@ -21,19 +27,11 @@ class LogScaler(IdentityScaler):
         x = super().forward(x)
         return x.abs().log1p() * x.sign()
 
-    @property
-    def output_size(self):
-        return 1
-
 
 class YearScaler(IdentityScaler):
     def forward(self, x):
         x = super().forward(x)
         return x/365
-
-    @property
-    def output_size(self):
-        return 1
 
 
 class NumToVector(IdentityScaler):
@@ -84,26 +82,11 @@ class PoissonScaler(IdentityScaler):
         res = self.arange * torch.log(x).unsqueeze(-1) - self.factor * torch.ones_like(x).unsqueeze(-1)
         return res.argmax(dim=-1).float().where(x < self.kmax, torch.poisson(x))
 
-    @property
-    def output_size(self):
-        return 1
-
 
 class ExpScaler(IdentityScaler):
-    def __init__(self, column=0):
-        super().__init__()
-        self.column = column
-
     def forward(self, x):
         x = super().forward(x)
-        if self.column is not None:
-            return torch.exp(x if x.dim() == 1 else x[:, self.column].unsqueeze(-1))
-        else:
-            return torch.exp(x)
-
-    @property
-    def output_size(self):
-        return 1
+        return torch.exp(x)
 
 class Periodic(IdentityScaler):
     '''
