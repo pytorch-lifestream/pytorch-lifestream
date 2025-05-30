@@ -12,6 +12,9 @@ class IdentityScaler(BaseEncoder):
     def output_size(self):
         return 1
 
+class SigmoidScaler(IdentityScaler, torch.nn.Sigmoid):
+    pass
+
 
 class LogScaler(IdentityScaler):
     def forward(self, x):
@@ -201,7 +204,7 @@ class PLE_MLP(IdentityScaler):
 def scaler_by_name(name):
     scaler = {
         'identity': IdentityScaler,
-        'sigmoid': torch.nn.Sigmoid,
+        'sigmoid': SigmoidScaler,
         'log': LogScaler,
         'year': YearScaler,
         'periodic' : Periodic,
