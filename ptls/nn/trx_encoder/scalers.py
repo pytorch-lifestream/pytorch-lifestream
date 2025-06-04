@@ -184,6 +184,69 @@ class PLE_MLP(IdentityScaler):
         return self.mlp_output_size
 
 
+class Time2Vec(IdentityScaler):
+    """
+    One-dimensional time encoding.
+    Proposed in paper "Time2Vec: Learning a Vector Representation of Time".
+    Input tensor must contain times of transactions in any units.
+    According to the paper, this method should work equally well with absolute times,
+    relative times and times since the previous transactions.
+    Time values are encoded using linear layers and a cosine function.
+    """
+
+    # TODO: implement time normalization
+
+    def __init__(self, embeddings_size: int) -> None:
+        """
+        Class initialization.
+
+        Args:
+            embeddings_size (int): Desired size of periodic time embeddings.
+                Total resulting time embeddings will have the size of `embeddings_size` + 1
+                because of one extra non-periodic component per transaction.
+                This argument is called `k` in the original paper.
+        """
+
+        super().__init__()
+
+        self.embeddings_size = embeddings_size
+
+        self.fc1 = nn.Linear(1, 1)
+        self.fc2 = nn.Linear(1, self.embeddings_size)
+
+    def forward(self, event_times: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass.
+
+        Args:
+            event_times (torch.Tensor): Tensor containing absolute or relative event times in any units.
+
+        Returns:
+            torch.Tensor: Tensor with resulting time embeddings.
+        """
+
+        # Converting the times to the float type and adding an extra dimension at the end
+        event_times = event_times.float().unsqueeze(-1)
+
+        # Calculating the non-periodic components
+        non_periodic = self.fc1(event_times)
+
+        # Calculating the periodic components
+        periodic = torch.cos(self.fc2(event_times))
+
+        # Concatenating the resulting embeddings together
+        return torch.cat([non_periodic, periodic], -1)
+
+    @property
+    def output_size(self) -> int:
+        """
+        Returns:
+            int: The last dimension of the output tensor.
+        """
+
+        return self.embeddings_size + 1
+
+
 class Time2VecMult(IdentityScaler):
     """
     Multidimensional time encoding.
