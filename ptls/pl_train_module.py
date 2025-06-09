@@ -3,6 +3,7 @@ import logging
 import hydra
 import pytorch_lightning as pl
 import torch
+import torch.distributed as dist
 from omegaconf import DictConfig
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.callbacks import ModelCheckpoint
