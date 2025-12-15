@@ -97,18 +97,14 @@ Library description [index](docs/index.md)
 
 ## Citation
 
-We have a [paper](https://arxiv.org/abs/2002.08232) you can cite it:
+We have a [paper](https://www.ijcai.org/proceedings/2025/1272.pdf) you can cite it:
 ```bibtex
-@inproceedings{
-   Babaev_2022, series={SIGMOD/PODS ’22},
-   title={CoLES: Contrastive Learning for Event Sequences with Self-Supervision},
-   url={http://dx.doi.org/10.1145/3514221.3526129},
-   DOI={10.1145/3514221.3526129},
-   booktitle={Proceedings of the 2022 International Conference on Management of Data},
-   publisher={ACM},
-   author={Babaev, Dmitrii and Ovsov, Nikita and Kireev, Ivan and Ivanova, Maria and Gusev, Gleb and Nazarov, Ivan and Tuzhilin, Alexander},
-   year={2022},
-   month=jun, collection={SIGMOD/PODS ’22}
+@inproceedings{sakhno2025pytorch,
+  title={PyTorch-Lifestream: Learning Embeddings on Discrete Event Sequences},
+  author={Sakhno, Artem and Kireev, Ivan and Babaev, Dmitrii and Savchenko, Maxim and Gusev, Gleb and Savchenko, Andrey},
+  booktitle={Proceedings of the Thirty-Fourth International Joint Conference on Artificial Intelligence},
+  pages={11104--11108},
+  year={2025}
 }
 
 ```
