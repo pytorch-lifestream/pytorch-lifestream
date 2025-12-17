@@ -7,9 +7,12 @@ from omegaconf import OmegaConf
 from pathlib import Path
 from typing import Union, Callable, Optional, Any
 
-from fedcore.api.utils.data import get_compression_input
-from fedcore.api.main import FedCore
-from fedcore.tools.ruler import PerformanceEvaluator
+try:
+    from fedcore.api.utils.data import get_compression_input
+    from fedcore.api.main import FedCore
+    from fedcore.tools.ruler import PerformanceEvaluator
+except ImportError:
+    raise ImportError("fedcore is not installed. Please install it manually.")
 from pytorch_lightning import LightningDataModule
 from torch.nn.modules import Module
 from torch.utils.data import DataLoader

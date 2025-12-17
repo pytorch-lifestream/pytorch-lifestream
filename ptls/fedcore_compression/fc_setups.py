@@ -1,4 +1,7 @@
-from fedcore.repository.constanst_repository import INITIAL_ASSUMPTIONS
+try:
+    from fedcore.repository.constanst_repository import INITIAL_ASSUMPTIONS
+except ImportError:
+    raise ImportError("fedcore is not installed. Please install it manually.")
 
 RAW = {'compression_task': 'composite_compression',
        'need_pretrain': False,

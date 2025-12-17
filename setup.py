@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
     
 setuptools.setup(
     name='pytorch-lifestream',
-    version='0.6.0',
+    version='0.7.0',
     author='',
     author_email='',
     description='Lifestream data analysis with PyTorch',
@@ -35,6 +35,6 @@ setuptools.setup(
         'dask',
         'pymonad',
         'spacy==3.7.4',
-        'fedcore>=0.0.4.5'
+        # 'fedcore>=0.0.4.5'  # Optional: install manually if needed
     ],
 )

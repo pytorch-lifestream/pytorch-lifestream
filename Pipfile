@@ -33,7 +33,6 @@ pymonad = "==2.4.0"
 distributed = "==2023.5.0"
 dask = "==2023.5.0"
 spacy = "==3.7.4"
-fedcore = "*"
 
 [packages]
 pytorch-lifestream = {editable = true, path = "."}
