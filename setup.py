@@ -19,7 +19,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.9',
     install_requires=[
         'duckdb',
         'hydra-core>=1.1.2',
@@ -34,7 +34,12 @@ setuptools.setup(
         'transformers',
         'dask',
         'pymonad',
-        'spacy==3.7.4',
-        # 'fedcore>=0.0.4.5'  # Optional: install manually if needed
     ],
+    extras_require={
+        # Heavy / optional backends, not required for the core library.
+        'spark': ['pyspark>=3.2'],
+        'spacy': ['spacy>=3.7'],
+        'test': ['pytest', 'pyhocon'],
+        # 'fedcore>=0.0.4.5'  # Optional: install manually if needed
+    },
 )
