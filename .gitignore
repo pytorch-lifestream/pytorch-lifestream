@@ -21,3 +21,5 @@ site
 *.log
 *.code-workspace
 *.pyc
+.test-results/
+.venv/

@@ -1,4 +1,5 @@
 import pandas as pd
+from pandas.api.types import is_datetime64_any_dtype, is_string_dtype
 from pyspark.sql import SparkSession
 from pyspark.sql.types import TimestampType
 
@@ -43,10 +44,10 @@ def test_timestamp_to_dt():
     # df['dt'] = pd.to_datetime(df['dt'])  # Ensure 'dt' is datetime for comparison
     df['dt2'] = pd.to_datetime(df['dt2'])
     spark.conf.unset("spark.sql.session.timeZone")
-    assert (df['dt'] == df['dt2']).all()
-    assert df['dt'].dtype == 'object'
+    assert (pd.to_datetime(df['dt']) == df['dt2']).all()
+    assert is_string_dtype(df['dt'].dtype)
     assert df['ts'].dtype == 'int64'
-    assert df['dt2'].dtype == 'datetime64[ns]'
+    assert is_datetime64_any_dtype(df['dt2'].dtype)
 
 
 

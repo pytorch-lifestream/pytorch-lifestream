@@ -1,4 +1,5 @@
 import os
+import inspect
 import pandas as pd
 import pytorch_lightning as pl
 import torch
@@ -181,8 +182,12 @@ class ONNXInferenceModule(InferenceModule):
                 path: str,
                 model
             ) -> None:
-        
+        # This model's export adapter uses the tracing exporter.
+        export_options = {}
+        if 'dynamo' in inspect.signature(torch.onnx.export).parameters:
+            export_options['dynamo'] = False
         model.to_onnx(path,
+                    **export_options,
                     export_params=True,
                     input_names=["input"],
                     output_names=["output"],

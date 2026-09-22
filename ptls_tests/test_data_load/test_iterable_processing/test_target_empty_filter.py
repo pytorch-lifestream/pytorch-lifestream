@@ -8,7 +8,7 @@ def get_data():
         {'uid': 1, 'target': 0},
         {'uid': 2, 'target': 1},
         {'uid': 3, 'target': None},
-        {'uid': 4, 'target': np.NaN},
+        {'uid': 4, 'target': np.nan},
         {'uid': 5, 'target': float('NaN')},
         {'uid': 6, 'target': "class_0"},
      ]

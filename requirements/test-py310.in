@@ -1,0 +1,17 @@
+# Supported Linux x86-64 CPU test environment: Python 3.10.
+-r test-common.in
+torch==2.3.1+cpu
+pytorch-lightning==2.4.0
+torchmetrics==1.4.1
+numpy==1.26.4
+pandas==2.1.4
+scikit-learn==1.3.2
+pyarrow==14.0.2
+dask==2024.6.1
+distributed==2024.6.1
+transformers==4.42.4
+pyspark==3.5.1
+onnx==1.16.2
+onnxruntime==1.19.2
+duckdb==0.10.3
+catboost==1.2.5

@@ -1,0 +1,8 @@
+# Additional tools for library tests and the CoLES tutorials.
+-r ../requirements-notebook-tests.txt
+setuptools==80.9.0
+wheel
+pyhocon
+tensorboard
+matplotlib
+ipywidgets

@@ -51,7 +51,10 @@ class SopNspModule(ABSModule):
         if loss is None:
             loss = BCELoss()
         if validation_metric is None:
-            validation_metric = torchmetrics.AUROC(num_classes=2)
+            try:
+                validation_metric = torchmetrics.AUROC(task="binary")
+            except TypeError:  # torchmetrics before the task argument
+                validation_metric = torchmetrics.AUROC(num_classes=2)
 
         super().__init__(validation_metric,
                          seq_encoder,
