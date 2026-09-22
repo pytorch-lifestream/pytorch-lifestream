@@ -34,19 +34,11 @@ The following variants of the contrastive losses are supported:
 pip install pytorch-lifestream
 ```
 
-## Install from source
+## Develop and test from source
 
-```sh
-# Ubuntu 20.04
-
-sudo apt install python3.8 python3-venv
-pip3 install pipenv
-
-pipenv sync --dev # install packages exactly as specified in Pipfile.lock
-pipenv shell
-pytest
-
-```
+For a reproducible development setup, follow [Testing](TESTING.md). It describes
+the two tested Python environments, installation from a checkout and the commands
+to check library changes.
 
 ## Demo notebooks
 
@@ -91,9 +83,9 @@ Library description [index](docs/index.md)
 
 ## How to contribute
 
-1. Make your chages via Fork and Pull request.
-2. Write unit test for new code in `ptls_tests`.
-3. Check unit test via `pytest`: [Example](.#install-from-source).
+1. Make changes in a branch of your fork and open a pull request.
+2. Add tests for new behavior in `ptls_tests`.
+3. Follow [Testing](TESTING.md) to install the test dependencies and run `pytest`.
 
 ## Citation
 

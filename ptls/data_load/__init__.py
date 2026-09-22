@@ -410,7 +410,10 @@ def collate_wo_target(batch):
 
 class ZeroDownSampler(Sampler):
     def __init__(self, targets):
-        super().__init__(None)
+        try:
+            super().__init__(None)
+        except TypeError:
+            super().__init__()
         self.pos_ids = np.array([idx for idx, y in enumerate(targets) if y == 1])
         self.neg_ids = np.array([idx for idx, y in enumerate(targets) if y == 0])
 

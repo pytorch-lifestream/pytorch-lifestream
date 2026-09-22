@@ -23,7 +23,10 @@ class RtdModule(ABSModule):
                        lr_scheduler_partial=None):
 
         if validation_metric is None:
-            validation_metric = torchmetrics.AUROC(num_classes=2)
+            try:
+                validation_metric = torchmetrics.AUROC(task="binary")
+            except TypeError:  # torchmetrics before the task argument
+                validation_metric = torchmetrics.AUROC(num_classes=2)
         if loss is None:
             loss = BCELoss()
 

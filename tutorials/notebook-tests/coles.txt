@@ -1,0 +1,4 @@
+-x
+--nbmake-kernel=python3
+tutorials/notebooks/coles-emb.ipynb
+tutorials/notebooks/coles-finetune.ipynb
