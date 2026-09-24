@@ -45,6 +45,9 @@ uv run pytest
 ```
 
 For a runtime-only environment, use `uv sync --locked --no-dev`.
+The development dependencies support Python 3.10 and 3.13. To select a version,
+run `uv sync --locked --python 3.13` and `uv run --python 3.13 pytest`
+(replace `3.13` with `3.10` for Python 3.10). PySpark tests require Java 17.
 `Dockerfile` uses the same lockfile for tests. `DockerfilePaper` retains the
 separate, historical paper reproduction environment.
 
