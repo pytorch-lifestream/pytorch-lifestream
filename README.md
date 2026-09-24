@@ -36,17 +36,20 @@ pip install pytorch-lifestream
 
 ## Install from source
 
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run
+from the repository root:
+
 ```sh
-# Ubuntu 20.04
-
-sudo apt install python3.8 python3-venv
-pip3 install pipenv
-
-pipenv sync --dev # install packages exactly as specified in Pipfile.lock
-pipenv shell
-pytest
-
+uv sync --locked
+uv run pytest
 ```
+
+For a runtime-only environment, use `uv sync --locked --no-dev`.
+The development dependencies support Python 3.10 and 3.13. To select a version,
+run `uv sync --locked --python 3.13` and `uv run --python 3.13 pytest`
+(replace `3.13` with `3.10` for Python 3.10). PySpark tests require Java 17.
+`Dockerfile` uses the same lockfile for tests. `DockerfilePaper` retains the
+separate, historical paper reproduction environment.
 
 ## Demo notebooks
 

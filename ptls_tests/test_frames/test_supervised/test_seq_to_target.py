@@ -151,7 +151,7 @@ def test_train_loop_rnn_regression():
         **get_rnn_params(),
     )
     dl = RandomEventData(tst_params_data(), target_type='regression')
-    trainer = pl.Trainer(max_epochs=1, logger=None, enable_checkpointing=False)
+    trainer = pl.Trainer(max_epochs=1, logger=None, enable_checkpointing=False, accelerator='cpu')
     trainer.fit(model, dl)
     print(trainer.logged_metrics)
 

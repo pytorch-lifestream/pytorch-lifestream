@@ -1,3 +1,66 @@
 [build-system]
-requires = ["setuptools>=42"]
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytorch-lifestream"
+version = "0.7.0"
+description = "Lifestream data analysis with PyTorch"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "duckdb>=1.1.3,<2",
+    "hydra-core>=1.3.2,<2",
+    "numpy>=2.1,<3",
+    "omegaconf>=2.3,<3",
+    "pandas>=2.2.3,<3",
+    "pyarrow>=18",
+    "pytorch-lightning>=2.5,<3",
+    "scikit-learn>=1.6,<2",
+    # Keep the legacy ONNX exporter used by ONNXInferenceModule.
+    "torch>=2.6,<2.7",
+    "torchmetrics>=1.6,<2",
+    "transformers>=4.46.3,<5",
+    "dask>=2024.12",
+    "pymonad==2.4.0",
+    "spacy>=3.8.7,<3.9",
+]
+
+[dependency-groups]
+dev = [
+    # Newer releases omit Python 3.10 wheels on macOS.
+    "onnxruntime>=1.20,<1.23",
+    "onnx>=1.17,<2",
+    "pytest",
+    "pylint",
+    "jupyter",
+    "pytest-cov",
+    "twine",
+    "setuptools>=59.5.0,<81",
+    "catboost",
+    "mkdocs",
+    "matplotlib>=3.1.1",
+    "pandas",
+    "scikit-learn>=0.21.2",
+    "pyspark>=4.0,<4.1",
+    "tqdm>=4.32.2",
+    "tensorboard>=2.1.0",
+    "pyhocon",
+    "hydra-optuna-sweeper>=1.2.0",
+    "joblib>=1.4.2,<2",
+    "scipy>=1.14.1,<2",
+    "distributed>=2024.12",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["ptls_tests"]
+
+[tool.setuptools.packages.find]
+include = ["ptls", "ptls.*"]
+namespaces = false
