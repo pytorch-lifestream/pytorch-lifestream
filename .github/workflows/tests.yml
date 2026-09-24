@@ -1,6 +1,7 @@
-name: Python package
+name: Python tests
 
-on: [push]
+on:
+  push:
 
 jobs:
   build:
@@ -26,18 +27,9 @@ jobs:
 
     - name: Install MPI
       run: sudo apt-get update && sudo apt-get install -y libopenmpi-dev
-    
+
     - name: Install dependencies
       run: uv sync --locked
 
     - name: Test with pytest
       run: uv run --locked pytest --cov=ptls --cov-report=term-missing
-    - name: Build distributions
-      if: startsWith(github.ref, 'refs/tags') && matrix.python-version == '3.13'
-      run: |
-        uv build
-    - name: Publish distribution 📦 to PyPI
-      if: startsWith(github.ref, 'refs/tags') && matrix.python-version == '3.13'
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
