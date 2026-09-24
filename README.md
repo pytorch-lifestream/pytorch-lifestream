@@ -36,17 +36,17 @@ pip install pytorch-lifestream
 
 ## Install from source
 
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run
+from the repository root:
+
 ```sh
-# Ubuntu 20.04
-
-sudo apt install python3.8 python3-venv
-pip3 install pipenv
-
-pipenv sync --dev # install packages exactly as specified in Pipfile.lock
-pipenv shell
-pytest
-
+uv sync --locked
+uv run pytest
 ```
+
+For a runtime-only environment, use `uv sync --locked --no-dev`.
+`Dockerfile` uses the same lockfile for tests. `DockerfilePaper` retains the
+separate, historical paper reproduction environment.
 
 ## Demo notebooks
 

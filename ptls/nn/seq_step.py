@@ -90,7 +90,7 @@ class SkipStepEncoder(nn.Module):
             idx_to_take = np.arange(min(l - 1, s - 1 + l % s), l, s)
             pad_idx = np.array([max_len - 1] * (max_len // s - len(idx_to_take)), dtype=np.int32)
             idx_to_take = np.concatenate([[-1], idx_to_take, pad_idx]) + 1
-            first_dim_idx.append(np.ones(len(idx_to_take)) * i)
+            first_dim_idx.append(np.full(len(idx_to_take), i, dtype=np.int64))
             second_dim_idx.append(idx_to_take)
 
         out = x.payload[first_dim_idx, second_dim_idx]
