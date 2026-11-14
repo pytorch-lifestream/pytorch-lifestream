@@ -133,8 +133,11 @@ class MLMPretrainModule(pl.LightningModule):
         """
         mask_num = mask.int().sum()
         mn = 1 - torch.eye(mask_num, device=mask.device)
-        neg_ix = torch.multinomial(mn, self.hparams.neg_count)
-
+        if mask_num < 2:
+            return None
+        max_possible_negs = mask_num.item() - 1
+        curr_neg_count = min(self.hparams.neg_count, max_possible_negs)
+        neg_ix = torch.multinomial(mn, curr_neg_count)
         b_ix = torch.arange(mask.size(0), device=mask.device).view(-1, 1).expand_as(mask)[mask][neg_ix]
         t_ix = torch.arange(mask.size(1), device=mask.device).view(1, -1).expand_as(mask)[mask][neg_ix]
         return b_ix, t_ix
@@ -148,6 +151,8 @@ class MLMPretrainModule(pl.LightningModule):
         target = x.payload[mask].unsqueeze(1)  # N, 1, H
         predict = out[mask].unsqueeze(1)  # N, 1, H
         neg_ix = self.get_neg_ix(mask)
+        if neg_ix is None:
+            return torch.tensor(0.0, device=target.device, requires_grad=True)
         negative = out[neg_ix[0], neg_ix[1]]  # N, nneg, H
         loss = self.loss_fn(target, predict, negative)
 
