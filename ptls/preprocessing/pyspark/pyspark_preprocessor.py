@@ -120,6 +120,10 @@ class PysparkDataPreprocessor(DataPreprocessor):
         )
 
     @staticmethod
+    def _create_identity_transformer(col: str):
+        return ColIdentityEncoder(col_name_original=col)
+
+    @staticmethod
     def _td_default(df, cols_event_time):
         w = Window().orderBy(cols_event_time)
         tmp_df = df.select(cols_event_time).distinct()

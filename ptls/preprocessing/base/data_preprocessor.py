@@ -13,7 +13,6 @@ from ptls.preprocessing.base.transformation.col_event_time_transformer import Da
 from ptls.preprocessing.base.transformation.col_identity_transformer import ColIdentityEncoder
 from ptls.preprocessing.base.transformation.col_numerical_transformer import ColTransformer
 from ptls.preprocessing.base.transformation.user_group_transformer import UserGroupTransformer
-from ptls.preprocessing.multithread_dispatcher import DaskDispatcher
 from ptls.preprocessing.pandas.pandas_transformation.category_identity_encoder import CategoryIdentityEncoder
 from ptls.preprocessing.pandas.pandas_transformation.pandas_freq_transformer import FrequencyEncoder
 
@@ -49,27 +48,53 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
     ):
         self.cl_id = col_id
         self.ct_event_time = col_event_time
-        self.cts_category = cols_category
-        self.cts_numerical = cols_numerical
-        self.cols_identity = cols_identity
+        self.cts_category = cols_category or []
+        self.cts_numerical = cols_numerical or []
+        self.cols_identity = cols_identity if cols_identity is not None else []
         self.t_user_group = t_user_group
         self.n_jobs = n_jobs
-        self.category_transformation = None
+        self.category_transformation = getattr(self, "category_transformation", None)
         self.cols_first_item = cols_first_item
         self.return_records = return_records
 
         self._init_transform_function()
 
+        transformed_columns = {
+            ct.col_name_target
+            for ct in [self.ct_event_time, *self.cts_category, *self.cts_numerical]
+        }
+        self.cts_identity = [
+            self._create_identity_transformer(col)
+            for col in self.cols_identity if col not in transformed_columns
+        ]
         self._all_col_transformers = [
             [self.ct_event_time],
             self.cts_category,
             self.cts_numerical,
+            self.cts_identity,
             [self.t_user_group],
         ]
         self.unitary_func, self.aggregate_func = {}, {}
 
         self._all_col_transformers = reduce(iadd, self._all_col_transformers, [])
-        self.multithread_dispatcher = DaskDispatcher()
+        self.multithread_dispatcher = None
+
+    def _get_dispatcher(self):
+        if self.multithread_dispatcher is None:
+            from ptls.preprocessing.multithread_dispatcher import DaskDispatcher
+
+            self.multithread_dispatcher = DaskDispatcher()
+        return self.multithread_dispatcher
+
+    def __getstate__(self):
+        state = super().__getstate__().copy()
+        # A live Dask client is runtime state, not part of the fitted preprocessor.
+        state["multithread_dispatcher"] = None
+        return state
+
+    @staticmethod
+    def _create_identity_transformer(col: str):
+        return ColIdentityEncoder(col_name_original=col)
 
     def _init_transform_function(self):
         cts_numerical = []
@@ -100,24 +125,20 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
                     col_name_target=x,
                     is_drop_original_col=False,
                 ),
-                right_function=lambda x: DatetimeToTimestamp(col_name_original=x),
+                right_function=lambda x: DatetimeToTimestamp(
+                    col_name_original=self.ct_event_time,
+                    is_drop_original_col=True,
+                ),
             )
         else:
             self.ct_event_time = self.ct_event_time
 
-        if isinstance(self.cts_category[0], str):
-            self.cts_category = Either(
-                value=self.ct_event_time,
-                monoid=["event_time", self.category_transformation == "frequency"],
-            ).either(
-                left_function=lambda x: [
-                    FrequencyEncoder(col_name_original=col) for col in self.cts_category
-                ],
-                right_function=lambda x: [
-                    CategoryIdentityEncoder(col_name_original=col)
-                    for col in self.cts_category
-                ],
-            )
+        encoder = (CategoryIdentityEncoder if self.category_transformation == "none"
+                   else FrequencyEncoder)
+        self.cts_category = [
+            encoder(col_name_original=col) if isinstance(col, str) else col
+            for col in self.cts_category
+        ]
 
         return
 
@@ -127,30 +148,30 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
             func_to_transform: List[Callable],
     ):
         col_dict, self.func_dict = {}, {}
-        for func_name in func_to_transform:
+        self.unitary_func, self.aggregate_func = {}, {}
+        # One source column may feed multiple transformations.
+        for index, func_name in enumerate(func_to_transform):
             if func_name.__repr__() == "Unitary transformation":
-                key = (
-                    func_name
-                    if isinstance(func_name, str)
-                    else func_name.col_name_original
-                )
                 value = (
                     dataset[func_name]
                     if isinstance(func_name, str)
                     else dataset[func_name.col_name_original]
                 )
-                col_dict.update({key: value})
-                self.unitary_func.update({func_name.col_name_original: func_name})
+                col_dict.update({index: value})
+                self.unitary_func.update({index: func_name})
             else:
                 self.aggregate_func.update({func_name.col_name_original: func_name})
         return col_dict
 
     def _apply_aggregation(self, individuals: List[Dict], input_data):
-        result_dict = reduce(lambda a, b: {**a, **b}, individuals)
+        result_dict = {
+            name: column for frame in individuals for name, column in frame.items()
+        }
         transformed_df = pd.concat(result_dict, axis=1)
+        dispatcher = self._get_dispatcher()
         for agg_col, agg_fun in self.aggregate_func.items():
             transformed_df[agg_col] = input_data[agg_col]
-            transformed_df = self.multithread_dispatcher.evaluate(
+            transformed_df = dispatcher.evaluate(
                 individuals=transformed_df, objective_func=agg_fun
             )
         return transformed_df
@@ -164,18 +185,19 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         return self
 
     def fit_transform(self, x, y=None, **fit_params):
+        dispatcher = self._get_dispatcher()
         transformed_cols = Maybe.insert(
             self._chunk_data(dataset=x, func_to_transform=self._all_col_transformers)
         ).maybe(
             default_value=None,
-            extraction_function=lambda chunked_data: self.multithread_dispatcher.evaluate(
+            extraction_function=lambda chunked_data: dispatcher.evaluate(
                 individuals=chunked_data, objective_func=self.unitary_func
             ),
         )
         transformed_features = self._apply_aggregation(
             individuals=transformed_cols, input_data=x
         )
-        self.multithread_dispatcher.shutdown()
+        dispatcher.shutdown()
         return transformed_features
 
     def transform(self, x):

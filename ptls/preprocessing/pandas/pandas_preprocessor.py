@@ -73,6 +73,11 @@ class PandasDataPreprocessor(DataPreprocessor):
         return_records: bool = True,
         n_jobs: int = -1,
     ):
+        # BaseEstimator uses constructor parameter names when rendering the estimator.
+        self.col_id = col_id
+        self.col_event_time = col_event_time
+        self.cols_category = cols_category
+        self.cols_numerical = cols_numerical
         self.category_transformation = category_transformation
         self.return_records = return_records
         self.cols_first_item = cols_first_item
@@ -84,9 +89,24 @@ class PandasDataPreprocessor(DataPreprocessor):
             cols_category=cols_category,
             cols_identity=cols_identity,
             cols_numerical=cols_numerical,
+            cols_first_item=cols_first_item,
             n_jobs=n_jobs,
             return_records=return_records,
         )
+
+    def fit(self, x):
+        self.fit_transform(x)
+        return self
+
+    def transform(self, x):
+        """Apply fitted transformations without changing their learned mappings."""
+        dispatcher = self._get_dispatcher()
+        previous_method = dispatcher.transformation_func
+        dispatcher.transformation_func = "transform"
+        try:
+            return super().fit_transform(x)
+        finally:
+            dispatcher.transformation_func = previous_method
 
     @staticmethod
     def _td_default(df, cols_event_time):
