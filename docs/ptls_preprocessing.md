@@ -131,3 +131,29 @@ assert sum(len(rec['event_time']) for rec in data) == len(df_trx)
 6. Each feature is a tensor. 
 
 The same way is used for `ptls.preprocessing.PysparkDataPreprocessor`.
+
+## Reusing a fitted Pandas preprocessor
+
+Use `fit` or `fit_transform` to learn category mappings, then `transform` to apply
+them to held-out data. `transform` does not refit frequency encoders; unseen
+categories retain the fallback index established during training. An unfitted
+frequency encoder raises `NotFittedError`. Save the fitted preprocessor alongside
+the encoder weights when reusing a trained model.
+
+## Scalar fields and existing category indices
+
+`cols_first_item` takes the first value in event-time order for a selected column.
+Select an unchanged user-level field through `cols_identity`, for example
+`cols_identity=['target'], cols_first_item=['target']`. Other selected columns
+remain sequences. `cols_first_item` controls aggregation; it does not select
+additional input columns on its own. In Pandas, a source column can also feed
+multiple transformations with distinct output names. Selecting that source in
+`cols_identity` retains its raw values alongside renamed outputs; an explicit
+transformation takes precedence when its output has the same name as an identity
+field.
+
+For already encoded integer categories, `category_transformation='none'` preserves
+the original indices instead of frequency-encoding them. Reserve index 0 for
+padding. The dictionary size is the maximum observed index plus one, including
+unused gaps. Both options also apply after serializing and restoring a fitted
+Pandas preprocessor.

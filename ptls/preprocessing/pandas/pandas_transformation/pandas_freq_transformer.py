@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.exceptions import NotFittedError
 
 from ptls.preprocessing.base.transformation.col_category_transformer import ColCategoryTransformer
 
@@ -62,6 +63,8 @@ class FrequencyEncoder(ColCategoryTransformer):
         return self.other_values_code + 1
 
     def transform(self, x: pd.DataFrame):
+        if self.mapping is None:
+            raise NotFittedError("Fit the frequency encoder before calling transform")
         pd_col = x[self.col_name_original].astype(str)
         x = self.attach_column(
             x,

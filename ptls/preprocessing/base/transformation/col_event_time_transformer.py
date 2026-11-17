@@ -27,11 +27,7 @@ class DatetimeToTimestamp(ColTransformer):
     def __repr__(self):
         return "Unitary transformation"
 
-    def transform(self, x: pd.Series):
-        x = dt_to_timestamp(x)
-        new_x = self.attach_column(x)
-        return (
-            new_x
-            if self.is_drop_original_col
-            else new_x.update({self.col_name_original: x})
-        )
+    def transform(self, x: pd.DataFrame):
+        timestamp = dt_to_timestamp(x[self.col_name_original]).rename(self.col_name_target)
+        x = self.attach_column(x, timestamp)
+        return self.drop_original_col(x)
